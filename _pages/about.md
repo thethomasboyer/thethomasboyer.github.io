@@ -18,7 +18,7 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-I'm a PhD candidate in the [*Institut de Biologie de l'École Normale Supérieure*](https://www.ibens.bio.ens.psl.eu), under the supervision of [Auguste Genovesio](https://www.ibens.bio.ens.psl.eu/spip.php?article142).
+I'm a PhD candidate at the [*Institut de Biologie de l'École Normale Supérieure*](https://www.ibens.bio.ens.psl.eu), under the supervision of [Auguste Genovesio](https://www.ibens.bio.ens.psl.eu/spip.php?article142).
 
 I'm currently working on generating visual dynamics of cellular systems from purely time-unpaired imaging data.
 
