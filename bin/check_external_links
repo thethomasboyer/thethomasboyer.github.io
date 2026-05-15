@@ -1,0 +1,195 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "net/http"
+require "nokogiri"
+require "optparse"
+require "set"
+require "uri"
+require "yaml"
+
+OPTIONS = {
+  site: "_site",
+  check: false,
+  include_internal: false,
+  include_js: false,
+  timeout: 10,
+  max_redirects: 5,
+  user_agent: "thethomasboyer.github.io link checker",
+}.freeze
+
+HTML_ATTRIBUTES = %w[
+  href
+  src
+  action
+  poster
+  cite
+  srcset
+  data-href
+  data-src
+  data-url
+].freeze
+
+WEB_URL = %r{https?://[^\s"'<>]+}i
+
+options = OPTIONS.dup
+
+OptionParser.new do |parser|
+  parser.banner = "Usage: bundle exec ruby bin/check_external_links [options]"
+
+  parser.on("--site DIR", "Rendered site directory to scan (default: _site)") { |value| options[:site] = value }
+  parser.on("--check", "Check each URL over the network and fail on broken links") { options[:check] = true }
+  parser.on("--include-internal", "Include links to this site's configured url host") { options[:include_internal] = true }
+  parser.on("--js", "Also scan rendered JavaScript files") { options[:include_js] = true }
+  parser.on("--timeout SECONDS", Integer, "HTTP timeout per request (default: 10)") { |value| options[:timeout] = value }
+  parser.on("--max-redirects COUNT", Integer, "Maximum redirects to follow (default: 5)") { |value| options[:max_redirects] = value }
+  parser.on("--user-agent VALUE", "User-Agent sent when --check is used") { |value| options[:user_agent] = value }
+  parser.on("-h", "--help", "Show this help") do
+    puts parser
+    exit
+  end
+end.parse!
+
+def configured_site_host
+  return nil unless File.file?("_config.yml")
+
+  config = YAML.safe_load_file("_config.yml", aliases: true) || {}
+  url = config["url"].to_s
+  return nil if url.empty?
+
+  URI(url).host
+rescue StandardError
+  nil
+end
+
+def normalize_url(raw_url)
+  url = raw_url.to_s.strip
+  url = url.delete_suffix("\\")
+  url = url.sub(/[),.;]+$/, "")
+  return nil unless url.match?(WEB_URL)
+
+  uri = URI.parse(url)
+  return nil unless %w[http https].include?(uri.scheme)
+
+  uri.fragment = nil
+  uri.to_s
+rescue URI::InvalidURIError
+  nil
+end
+
+def extract_urls(value)
+  value.to_s.scan(WEB_URL).filter_map { |url| normalize_url(url) }
+end
+
+def html_links(path)
+  doc = Nokogiri::HTML(File.read(path))
+  links = []
+
+  doc.traverse do |node|
+    next unless node.element?
+
+    HTML_ATTRIBUTES.each do |attribute|
+      value = node[attribute]
+      next unless value
+      next if value.start_with?("data:")
+
+      if attribute == "srcset"
+        value.split(",").each do |candidate|
+          url = normalize_url(candidate.strip.split(/\s+/).first)
+          links << [url, node.line] if url
+        end
+      else
+        extract_urls(value).each { |url| links << [url, node.line] }
+      end
+    end
+
+    node.attribute_nodes.each do |attribute|
+      next if attribute.value.start_with?("data:")
+
+      extract_urls(attribute.value).each { |url| links << [url, node.line] }
+    end
+  end
+
+  links
+end
+
+def text_links(path)
+  links = []
+  File.readlines(path, chomp: true).each_with_index do |line, index|
+    extract_urls(line).each { |url| links << [url, index + 1] }
+  end
+  links
+end
+
+def rendered_files(site, include_js:)
+  patterns = [File.join(site, "**", "*.html")]
+  patterns << File.join(site, "**", "*.js") if include_js
+  patterns.flat_map { |pattern| Dir.glob(pattern) }.sort
+end
+
+def check_once(uri, method, options)
+  request_class = method == :head ? Net::HTTP::Head : Net::HTTP::Get
+  request = request_class.new(uri)
+  request["User-Agent"] = options[:user_agent]
+  request["Accept"] = "*/*"
+  request["Range"] = "bytes=0-0" if method == :get
+
+  Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https", open_timeout: options[:timeout], read_timeout: options[:timeout]) do |http|
+    http.request(request)
+  end
+end
+
+def check_url(url, options, redirects = 0)
+  return [:broken, "too many redirects"] if redirects > options[:max_redirects]
+
+  uri = URI.parse(url)
+  response = check_once(uri, :head, options)
+  response = check_once(uri, :get, options) if response.code.to_i >= 400 || response.code.to_i == 405
+
+  if response.is_a?(Net::HTTPRedirection)
+    location = response["location"]
+    return [:broken, "#{response.code} redirect without Location"] unless location
+
+    return check_url(URI.join(uri, location).to_s, options, redirects + 1)
+  end
+
+  code = response.code.to_i
+  code < 400 ? [:ok, response.code] : [:broken, response.code]
+rescue StandardError => e
+  [:broken, e.message]
+end
+
+site = options[:site]
+abort "Rendered site directory not found: #{site}. Run `bundle exec jekyll build` first." unless Dir.exist?(site)
+
+site_host = configured_site_host
+locations_by_url = Hash.new { |hash, key| hash[key] = Set.new }
+
+rendered_files(site, include_js: options[:include_js]).each do |path|
+  scanner = File.extname(path) == ".html" ? method(:html_links) : method(:text_links)
+  scanner.call(path).each do |url, line|
+    host = URI.parse(url).host
+    next if !options[:include_internal] && site_host && host == site_host
+
+    locations_by_url[url] << "#{path}:#{line || 1}"
+  end
+end
+
+urls = locations_by_url.keys.sort
+puts "Found #{urls.size} external URL#{urls.size == 1 ? "" : "s"} in #{site}."
+
+broken = []
+urls.each do |url|
+  status, detail = options[:check] ? check_url(url, options) : [:listed, nil]
+  label = status == :ok ? "OK #{detail}" : status == :broken ? "BROKEN #{detail}" : "LINK"
+  puts "#{label.ljust(18)} #{url}"
+  locations_by_url[url].first(3).each { |location| puts "  #{location}" }
+  remaining = locations_by_url[url].size - 3
+  puts "  ... #{remaining} more" if remaining.positive?
+  broken << [url, detail] if status == :broken
+end
+
+if broken.any?
+  warn "\n#{broken.size} broken URL#{broken.size == 1 ? "" : "s"} found."
+  exit 1
+end

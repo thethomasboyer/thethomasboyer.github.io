@@ -45,93 +45,79 @@
   {% endif %}
 
   <!-- Entry bib key -->
-  <div id="{{ entry.key }}" class="{% if site.enable_publication_thumbnails %}col-sm-8{% else %}col-sm-10{% endif %}">
+  <div id="{{ entry.key }}" class="{% if site.enable_publication_thumbnails %}col-sm-8{% else %}col-sm-12{% endif %}">
     <!-- Title -->
     <div class="title">{{ entry.title }}</div>
     <!-- Author -->
     <div class="author">
-      {% assign author_array_size = entry.author_array | size %}
+      {%- assign author_array_size = entry.author_array | size -%}
+      {%- assign equal_contributors = entry.equal_contribution | split: ';' -%}
+      {%- assign use_split_authors = false -%}
+      {%- assign leading_author_limit = author_array_size -%}
+      {%- assign trailing_author_limit = 0 -%}
+      {%- assign hidden_author_limit = 0 -%}
+      {%- assign trailing_author_offset = author_array_size -%}
+      {%- if site.max_author_limit and author_array_size > site.max_author_limit -%}
+        {%- assign use_split_authors = true -%}
+        {%- assign leading_author_limit = 3 -%}
+        {%- assign trailing_author_limit = 3 -%}
+        {%- assign hidden_author_limit = author_array_size | minus: leading_author_limit | minus: trailing_author_limit -%}
+        {%- assign trailing_author_offset = author_array_size | minus: trailing_author_limit -%}
+      {%- endif -%}
+      {%- for author in entry.author_array limit: leading_author_limit -%}
+        {%- unless forloop.first -%}, {% endunless -%}
+        {%- include bib_author.liquid author=author equal_contributors=equal_contributors -%}
+      {%- endfor -%}
 
-      {% assign author_array_limit = author_array_size %}
-      {% if site.max_author_limit and author_array_size > site.max_author_limit %}
-        {% assign author_array_limit = site.max_author_limit %}
-      {% endif %}
-
-      {%- for author in entry.author_array limit: author_array_limit -%}
-        {% assign author_is_self = false %}
-        {%- assign author_last_name = author.last | regex_replace: '[*∗†‡§¶‖&^]', '' -%}
-        {%- assign author_last_html = author.last | regex_replace: '([*∗†‡§¶‖&^]+)', '<sup>\1</sup>' -%}
-        {% if site.scholar.last_name contains author_last_name %}
-          {% if site.scholar.first_name contains author.first %}
-            {% assign author_is_self = true %}
-          {% endif %}
+      {%- if use_split_authors -%}
+        {%- assign more_authors_hide = hidden_author_limit | append: ' more author' -%}
+        {%- if hidden_author_limit > 1 -%}
+          {%- assign more_authors_hide = more_authors_hide | append: 's' -%}
         {%- endif -%}
-        {% assign coauthor_url = null %}
-        {%- assign clean_last_name = author_last_name | downcase | remove_accents -%}
-        {% if site.data.coauthors[clean_last_name] %}
-          {%- for coauthor in site.data.coauthors[clean_last_name] -%}
-            {% if coauthor.firstname contains author.first %}
-              {%- assign coauthor_url = coauthor.url -%}
-              {% break %}
-            {% endif %}
-          {% endfor %}
-        {%- endif -%}
-
-        {%- if forloop.length > 1 -%}
-          {% if forloop.first == false %},&nbsp;{% endif %}
-          {%- if forloop.last and author_array_limit == author_array_size %}and&nbsp;{% endif -%}
-        {% endif %}
-        {%- if author_is_self -%}
-          <em>
-            {{- author.first }}
-            {{ author_last_html -}}
-          </em>
-        {%- else -%}
-          {%- if coauthor_url -%}
-            <a href="{{ coauthor_url }}">
-              {{- author.first }}
-              {{ author_last_html -}}
-            </a>
-          {%- else -%}
-            {{- author.first }}
-            {{ author_last_html -}}
-          {% endif %}
-        {%- endif -%}
-      {% endfor %}
-      {%- assign more_authors = author_array_size | minus: author_array_limit -%}
-
-      {%- assign more_authors_hide = more_authors | append: ' more author' -%}
-      {% if more_authors > 0 %}
-        {%- if more_authors > 1 -%}
-          {% assign more_authors_hide = more_authors_hide | append: 's' %}
-        {%- endif -%}
-        {% assign more_authors_show = '' %}
-        {%- for author in entry.author_array offset: author_array_limit -%}
-          {% assign more_authors_show = more_authors_show | append: author.first | append: ' ' | append: author.last %}
-          {% unless forloop.last %}
-            {% assign more_authors_show = more_authors_show | append: ', ' %}
-          {% endunless %}
+        {%- assign more_authors_show = '' -%}
+        {%- for author in entry.author_array offset: leading_author_limit limit: hidden_author_limit -%}
+          {%- capture middle_author -%}{%- include bib_author.liquid author=author equal_contributors=equal_contributors -%}{%- endcapture -%}
+          {%- assign more_authors_show = more_authors_show | append: middle_author | strip -%}
+          {%- unless forloop.last -%}
+            {%- assign more_authors_show = more_authors_show | append: ', ' -%}
+          {%- endunless -%}
         {%- endfor -%}
-        {%- assign more_authors_show = more_authors_show | regex_replace: '([*∗†‡§¶‖&^]+)', '<sup>\1</sup>' -%}
-        , and
-        <span
-          class="more-authors"
-          title="click to view {{ more_authors_hide }}"
-          onclick="
-              var element = $(this);
-              element.attr('title', '');
-              var more_authors_text = element.text() == '{{ more_authors_hide }}' ? '{{ more_authors_show }}' : '{{ more_authors_hide }}';
-              var cursorPosition = 0;
-              var textAdder = setInterval(function(){
-                element.html(more_authors_text.substring(0, cursorPosition + 1));
-                if (++cursorPosition == more_authors_text.length){
-                  clearInterval(textAdder);
+        , <span class="more-authors-wrapper" data-more-authors="{{ more_authors_show | escape }}">
+          <span class="more-authors-text"></span>
+          <button
+            type="button"
+            class="more-authors-toggle btn btn-sm z-depth-0"
+            data-collapsed-label="{{ more_authors_hide }}"
+            data-expanded-label="show fewer"
+            onclick="
+                var element = $(this);
+                var wrapper = element.closest('.more-authors-wrapper');
+                var text = wrapper.find('.more-authors-text');
+                if (wrapper.hasClass('open')) {
+                  wrapper.removeClass('open');
+                  text.empty();
+                  element.text(element.attr('data-collapsed-label'));
+                  return;
                 }
-            }, '{{ site.more_authors_animation_delay }}');
-          "
-        >
-          {{- more_authors_hide -}}
-        </span>
+                wrapper.addClass('open');
+                element.text(element.attr('data-expanded-label'));
+                var more_authors_text = wrapper.attr('data-more-authors');
+                var cursorPosition = 0;
+                text.empty();
+                var textAdder = setInterval(function(){
+                  text.html(more_authors_text.substring(0, cursorPosition + 1));
+                  if (++cursorPosition == more_authors_text.length){
+                    clearInterval(textAdder);
+                  }
+              }, '{{ site.more_authors_animation_delay }}');
+            "
+          >
+            {{- more_authors_hide -}}
+          </button>
+        </span>, {% for author in entry.author_array offset: trailing_author_offset limit: trailing_author_limit -%}
+          {%- unless forloop.first -%}, {% endunless -%}
+          {%- include bib_author.liquid author=author equal_contributors=equal_contributors -%}
+        {%- endfor -%}
       {% endif %}
       {% if entry.annotation %}
         <i
@@ -174,7 +160,11 @@
       {% include hook/bib.liquid %}
     {% endif %}
     {% assign entrytype_text = entrytype | strip_html | strip %}
-    {% capture periodical %}{{ entrytype }}{% if entrytype_text != "" and entryyear != "" %}, {% endif %}{{ entrymonth }}{{ entryyear }}{% endcapture %}
+    {% if entry.venue %}
+      {% capture periodical %}<strong>{{ entry.venue }}{% if entry.year %}, {{ entry.year }}{% endif %}</strong>{% endcapture %}
+    {% else %}
+      {% capture periodical %}{{ entrytype }}{% if entrytype_text != "" and entryyear != "" %}, {% endif %}{{ entrymonth }}{{ entryyear }}{% endcapture %}
+    {% endif %}
     <div class="periodical">
       {{ periodical | strip }}
     </div>
@@ -192,11 +182,14 @@
       {% if entry.abstract %}
         <a class="abstract btn btn-sm z-depth-0" role="button">Abs</a>
       {% endif %}
+      {% if entry.conference %}
+        <a href="{{ entry.conference }}" class="btn btn-sm z-depth-0" role="button">Conference</a>
+      {% endif %}
       {% if entry.doi %}
         <a href="https://doi.org/{{ entry.doi }}" class="btn btn-sm z-depth-0" role="button">DOI</a>
       {% endif %}
       {% if entry.arxiv %}
-        <a href="http://arxiv.org/abs/{{ entry.arxiv }}" class="btn btn-sm z-depth-0" role="button">arXiv</a>
+        <a href="https://arxiv.org/abs/{{ entry.arxiv }}" class="btn btn-sm z-depth-0" role="button">arXiv</a>
       {% endif %}
       {% if entry.bibtex_show %}
         <a class="bibtex btn btn-sm z-depth-0" role="button">Bib</a>

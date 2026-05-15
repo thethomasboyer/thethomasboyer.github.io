@@ -2,10 +2,19 @@
  * Content
  ******************************************************************************/
 
+html {
+  min-height: 100%;
+}
+
 body {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   padding-bottom: 70px;
   color: var(--global-text-color);
   background-color: var(--global-bg-color);
+  font-family: $base-font-family;
 
   h1,
   h2,
@@ -29,6 +38,35 @@ body.sticky-bottom-footer {
 
 .container {
   max-width: $max-content-width;
+}
+
+.container[role="main"] {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  width: 100%;
+}
+
+.container[role="main"] > .post,
+.post.distill {
+  flex: 1 0 auto;
+}
+
+footer {
+  flex-shrink: 0;
+}
+
+.about-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.about-page {
+  flex: 1 0 auto;
+}
+
+.about-page .about-social {
+  margin-top: 1.5rem;
 }
 
 // Profile

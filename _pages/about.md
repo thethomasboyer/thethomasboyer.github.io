@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: Doctoral Student in BioML @ ENS Ulm
+subtitle: 
 
 selected_papers: false # includes a list of papers marked as "selected={true}"
 social: true # includes social icons at the bottom of the page
@@ -18,6 +18,8 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-This is my very own piece of the web.
+I'm a PhD candidate in the [*Institut de Biologie de l'École Normale Supérieure*](https://www.ibens.bio.ens.psl.eu), under the supervision of [Auguste Genovesio](https://www.ibens.bio.ens.psl.eu/spip.php?article142).
 
-WIP...
+I'm currently working on generating visual dynamics of cellular systems from purely time-unpaired imaging data.
+
+Feel free to reach out!

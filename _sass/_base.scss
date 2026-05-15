@@ -19,6 +19,13 @@ strong {
   color: var(--global-text-color);
 }
 
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
 hr {
   border-top: 1px solid var(--global-divider-color);
 }
@@ -241,11 +248,61 @@ ul.task-list input[type="checkbox"] {
   }
 }
 
+.post-header .post-title {
+  color: var(--global-theme-color);
+  font-size: 2.25rem;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.about-page .post-header .post-title {
+  color: var(--global-text-color);
+  font-weight: 700;
+  text-align: left;
+}
+
+.about-page .post-header {
+  margin-bottom: 4rem;
+}
+
+.about-page .about-social {
+  .contact-icons {
+    font-size: 2.15rem;
+  }
+
+  .contact-icons a img {
+    width: 3.35rem;
+    height: 3.35rem;
+  }
+
+  .contact-icons a svg {
+    width: 3.65rem;
+    height: 4.15rem;
+
+    image {
+      width: 3.65rem;
+      height: 3.65rem;
+    }
+  }
+}
+
+.about-content a {
+  color: inherit;
+  border-bottom: 1px solid var(--global-divider-color);
+  text-decoration: none;
+
+  &:hover {
+    color: inherit;
+    border-bottom-color: var(--global-text-color);
+    text-decoration: none;
+  }
+}
+
 // Navbar customization
 
 .navbar {
   box-shadow: none;
-  border-bottom: 1px solid var(--global-divider-color);
+  border-bottom: 0;
   background-color: var(--global-bg-color);
   opacity: 0.95;
 }
@@ -404,6 +461,9 @@ ul.task-list input[type="checkbox"] {
     font-size: 2rem;
 
     a {
+      border-bottom: 0;
+      text-decoration: none;
+
       img {
         width: 3.2rem;
         height: 3.2rem;
@@ -480,7 +540,7 @@ footer.fixed-bottom {
     color: var(--global-footer-text-color);
     padding-top: 9px;
     padding-bottom: 8px;
-    text-align: center;
+    text-align: left;
   }
 
   a {
@@ -495,12 +555,13 @@ footer.fixed-bottom {
 
 footer.sticky-bottom {
   border-top: 1px solid var(--global-divider-color);
-  padding-top: 40px;
-  padding-bottom: 40px;
-  font-size: 0.9rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: 0.75rem;
+  background-color: var(--global-bg-color);
 
   .container {
-    text-align: center;
+    text-align: left;
   }
 }
 
@@ -558,6 +619,29 @@ footer.sticky-bottom {
   }
 }
 
+.blog-page {
+  .header-bar {
+    border-bottom: 0;
+    padding-top: 1rem;
+    padding-bottom: 1.5rem;
+
+    h1 {
+      font-size: 2.25rem;
+    }
+
+    h2 {
+      font-size: 1rem;
+    }
+  }
+
+  .post-list {
+    h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.35rem;
+    }
+  }
+}
+
 .tag-category-list {
   border-bottom: 1px solid var(--global-divider-color);
   text-align: center;
@@ -589,7 +673,7 @@ footer.sticky-bottom {
   padding: 0;
 
   li {
-    border-bottom: 1px solid var(--global-divider-color);
+    border-bottom: 0;
     list-style: none;
     padding-top: 2rem;
     padding-bottom: 2rem;
@@ -619,6 +703,10 @@ footer.sticky-bottom {
     mjx-container[jax="CHTML"][display="true"] {
       display: unset;
     }
+  }
+
+  li + li {
+    border-top: 1px solid var(--global-divider-color);
   }
 }
 
@@ -715,8 +803,8 @@ footer.sticky-bottom {
 
   h2.bibliography {
     color: var(--global-divider-color);
-    border-top: 1px solid var(--global-divider-color);
-    padding-top: 1rem;
+    border-top: 0;
+    padding-top: 0;
     margin-top: 2rem;
     text-align: right;
   }
@@ -756,32 +844,54 @@ footer.sticky-bottom {
       }
 
       .title {
+        color: var(--global-theme-color);
         font-weight: bolder;
       }
 
+      [id]:target {
+        scroll-margin-top: 5rem;
+        outline: 2px solid var(--global-theme-color);
+        outline-offset: 0.4rem;
+      }
+
       .author {
+        line-height: 1.45;
+
         a {
-          border-bottom: 1px dashed var(--global-theme-color);
+          border-bottom: none;
 
           &:hover {
-            border-bottom-style: solid;
             text-decoration: none;
           }
         }
 
-        > em {
+        em {
           border-bottom: 1px solid;
           font-style: normal;
         }
 
-        > span.more-authors {
+        strong {
+          font-weight: 700;
+        }
+
+        .more-authors-wrapper {
           color: var(--global-text-color-light);
-          border-bottom: 1px dashed var(--global-text-color-light);
-          cursor: pointer;
+        }
+
+        .more-authors-text {
+          color: var(--global-text-color);
+        }
+
+        .more-authors-toggle {
+          color: var(--global-text-color-light);
+          border: 1px solid var(--global-divider-color);
+          padding: 0.05rem 0.4rem;
+          margin-left: 0.25rem;
+          text-transform: none;
 
           &:hover {
-            color: var(--global-text-color);
-            border-bottom: 1px dashed var(--global-text-color);
+            color: var(--global-theme-color);
+            border-color: var(--global-theme-color);
           }
         }
       }

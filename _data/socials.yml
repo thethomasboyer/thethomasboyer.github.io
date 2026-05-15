@@ -2,13 +2,14 @@
 # the commented lines are the default social media links supported by the template
 # the socials will be displayed in the order they are defined here
 
-github_username: thethomasboyer # your GitHub user name
+email: thomasboyer@protonmail.ch # your email address
 x_username: TheThomasBoyer # your X handle
-bluesky_url: https://bsky.app/profile/thethomasboyer.bsky.social # your bluesky URL
-linkedin_username: thomas-boyer-fr # your LinkedIn user name
+github_username: thethomasboyer # your GitHub user name
+# bluesky_url: https://bsky.app/profile/thethomasboyer.bsky.social # your bluesky URL
+# linkedin_username: thomas-boyer-fr # your LinkedIn user name
 orcid_id: 0009-0000-8554-4864 # your ORCID ID
-scholar_userid: eqheP7MAAAAJ&hl # your Google Scholar ID
-semanticscholar_id: 2273953033 # your Semantic Scholar ID
+scholar_userid: eqheP7MAAAAJ # your Google Scholar ID
+# semanticscholar_id: 2273953033 # your Semantic Scholar ID
 rss_icon: true # set to true to show the RSS icon
 
 # acm_id: # your dl.acm.org/profile/id

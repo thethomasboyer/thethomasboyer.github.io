@@ -55,6 +55,10 @@ ninja.data = [
   {%- for post in site.posts -%}
     {
       {%- assign title = post.title | escape | strip -%}
+      {%- assign post_description = post.description | strip_html | strip_newlines | escape | strip -%}
+      {%- if post_description == "" -%}
+        {%- assign post_description = post.content | strip_html | normalize_whitespace | truncatewords: 100 | escape | strip -%}
+      {%- endif -%}
       id: "post-{{ title | slugify }}",
       {% if post.redirect == blank %}
         title: "{{ title | truncatewords: 13 }}",
@@ -63,7 +67,7 @@ ninja.data = [
       {% else %}
         title: "{{ title | truncatewords: 13 }}",
       {% endif %}
-      description: "{{ post.description | strip_html | strip_newlines | escape | strip }}",
+      description: "{{ post_description }}",
       section: "Posts",
       handler: () => {
         {% if post.redirect == blank %}
@@ -73,6 +77,17 @@ ninja.data = [
         {% else %}
           window.location.href = "{{ post.redirect | relative_url }}";
         {% endif %}
+      },
+    },
+  {%- endfor -%}
+  {%- for publication in site.data.publication_search_entries -%}
+    {
+      id: "publication-{{ publication.id }}",
+      title: "{{ publication.title | strip_html | strip_newlines | escape | strip }}",
+      description: "{{ publication.description | strip_html | strip_newlines | escape | strip }}",
+      section: "Publications",
+      handler: () => {
+        window.location.href = "{{ '/publications/' | relative_url }}#{{ publication.id }}";
       },
     },
   {%- endfor -%}
@@ -288,6 +303,7 @@ ninja.data = [
       {
         id: '{{ social_id }}',
         title: '{{ social_title }}',
+        description: '{{ social[1] | strip_html | strip_newlines | escape | strip }}',
         section: 'Socials',
         handler: () => {
           window.open({{ social_url }}, "_blank");
