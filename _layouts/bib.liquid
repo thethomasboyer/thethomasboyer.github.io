@@ -191,6 +191,16 @@
       {% if entry.arxiv %}
         <a href="https://arxiv.org/abs/{{ entry.arxiv }}" class="btn btn-sm z-depth-0" role="button">arXiv</a>
       {% endif %}
+      {% if entry.biorxiv %}
+        {% assign biorxiv_id = entry.biorxiv | strip %}
+        {% if biorxiv_id contains '://' %}
+          <a href="{{ biorxiv_id }}" class="btn btn-sm z-depth-0" role="button">bioRxiv</a>
+        {% elsif biorxiv_id contains '/' %}
+          <a href="https://www.biorxiv.org/content/{{ biorxiv_id }}" class="btn btn-sm z-depth-0" role="button">bioRxiv</a>
+        {% else %}
+          <a href="https://www.biorxiv.org/content/10.1101/{{ biorxiv_id }}" class="btn btn-sm z-depth-0" role="button">bioRxiv</a>
+        {% endif %}
+      {% endif %}
       {% if entry.bibtex_show %}
         <a class="bibtex btn btn-sm z-depth-0" role="button">Bib</a>
       {% endif %}

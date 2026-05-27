@@ -42,7 +42,7 @@ module Jekyll
       return [] unless entry.respond_to?(:author) && entry.author
 
       entry.author.map do |author|
-        clean([author.first, author.last].compact.join(" "))
+        clean([author.first, author.prefix, author.last].compact.join(" "))
       end.compact
     rescue StandardError
       clean(entry[:author]).to_s.split(/\s+and\s+/).map do |name|
