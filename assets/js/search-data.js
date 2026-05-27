@@ -43,22 +43,6 @@ ninja.data = [{
         window.location.href = "/publications/#bourou2024phendiff";
       },
     },{
-      id: "publication-myara2026xfactors",
-      title: "XFACTORS: Disentangled Information Bottleneck via Contrastive Supervision",
-      description: "Alexandre Myara, Nicolas Bourriez, Thomas Boyer, Thomas Lemercier, Ihab Bendidi, Auguste Genovesio - arXiv, 2026",
-      section: "Publications",
-      handler: () => {
-        window.location.href = "/publications/#myara2026xfactors";
-      },
-    },{
-      id: "publication-gravier2026mmtsbm",
-      title: "Multi-marginal temporal Schrödinger Bridge Matching from unpaired data",
-      description: "Thomas Gravier, Thomas Boyer, Auguste Genovesio - ICML, 2026",
-      section: "Publications",
-      handler: () => {
-        window.location.href = "/publications/#gravier2026mmtsbm";
-      },
-    },{
       id: "publication-bourou2025diffex",
       title: "DiffEx: Explaining a Classifier with Diffusion Models to Identify Microscopic Cellular Variations",
       description: "Anis Bourou, Saranga Kingkor Mahanta, Thomas Boyer, Valérie Mezger, Auguste Genovesio - arXiv, 2025",
@@ -73,6 +57,30 @@ ninja.data = [{
       section: "Publications",
       handler: () => {
         window.location.href = "/publications/#bourou2025latentdiffusion";
+      },
+    },{
+      id: "publication-gravier2026mmtsbm",
+      title: "Multi-marginal temporal Schrödinger Bridge Matching from unpaired data",
+      description: "Thomas Gravier, Thomas Boyer, Auguste Genovesio - ICML, 2026",
+      section: "Publications",
+      handler: () => {
+        window.location.href = "/publications/#gravier2026mmtsbm";
+      },
+    },{
+      id: "publication-myara2026xfactors",
+      title: "XFACTORS: Disentangled Information Bottleneck via Contrastive Supervision",
+      description: "Alexandre Myara, Nicolas Bourriez, Thomas Boyer, Thomas Lemercier, Ihab Bendidi, Auguste Genovesio - arXiv, 2026",
+      section: "Publications",
+      handler: () => {
+        window.location.href = "/publications/#myara2026xfactors";
+      },
+    },{
+      id: "publication-Static2Dynamic",
+      title: "Static2Dynamic: Reconstructing videos of unobservable cellular, developmental, and disease processes",
+      description: "Thomas Boyer, Elaine del Nery, Nathalie Spassky, Auguste Genovesio - bioRxiv, 2026",
+      section: "Publications",
+      handler: () => {
+        window.location.href = "/publications/#Static2Dynamic";
       },
     },{
         id: 'social-email',
